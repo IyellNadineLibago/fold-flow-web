@@ -1,0 +1,87 @@
+.settings-page {
+  max-width: 640px;
+}
+
+.page-heading h1 {
+  margin: 0 0 4px;
+}
+
+.page-heading p {
+  margin: 0 0 22px;
+  color: #56615b;
+}
+
+.settings-card {
+  padding: 26px;
+  border: 1px solid #e3e7e1;
+  border-radius: 18px;
+  background: #fff;
+
+  h2 {
+    margin: 0 0 6px;
+  }
+
+  p {
+    margin: 0 0 18px;
+    color: #56615b;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+}
+
+.rate-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  input {
+    width: 140px;
+    padding: 11px 12px;
+    border: 1px solid #d5dbd2;
+    border-radius: 12px;
+  }
+}
+
+.currency {
+  font-weight: 700;
+}
+
+.save-button {
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #214a3a;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.note {
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.feedback {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+
+  &.success {
+    background: #e8f3ea;
+    color: #1f5a35;
+  }
+
+  &.error {
+    background: #fbeaea;
+    color: #8a2b2b;
+  }
+}

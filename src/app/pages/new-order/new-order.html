@@ -1,0 +1,154 @@
+
+<div class="order-page">
+  <div class="page-heading">
+    <h1>New Order</h1>
+    <p>Create an order and issue a digital laundry ticket.</p>
+  </div>
+
+  <section class="ticket-card" *ngIf="ticket() as ticket">
+    <span class="ticket-eyebrow">DIGITAL TICKET</span>
+    <h2 class="ticket-id">{{ ticket.id }}</h2>
+    <p class="ticket-hint">
+      Give this Order ID to the customer. They can type it into
+      “Track My Laundry” in the FoldFlow app.
+    </p>
+
+    <dl class="ticket-details">
+      <div><dt>Customer</dt><dd>{{ ticket.customerName }}</dd></div>
+      <div><dt>Contact</dt><dd>{{ ticket.contactNumber }}</dd></div>
+      <div><dt>Weight</dt><dd>{{ ticket.weight | number:'1.1-2' }} kg</dd></div>
+      <div>
+        <dt>Rate</dt>
+        <dd>{{ ticket.pricePerKilo | currency:'PHP':'symbol':'1.2-2' }} per kg</dd>
+      </div>
+      <div class="ticket-total">
+        <dt>Total fee</dt>
+        <dd>{{ ticket.totalFee | currency:'PHP':'symbol':'1.2-2' }}</dd>
+      </div>
+      <div><dt>Received</dt><dd>{{ ticket.receivedAt | date:'medium' }}</dd></div>
+    </dl>
+
+    <div class="ticket-actions no-print">
+      <button type="button" class="ticket-button" (click)="printTicket()">
+        Print receipt
+      </button>
+      <button type="button" class="ticket-button primary" (click)="newOrder()">
+        New order
+      </button>
+      <a class="ticket-link" routerLink="/active-orders">View active orders</a>
+    </div>
+  </section>
+
+  <form
+    *ngIf="!ticket()"
+    class="order-card"
+    #orderForm="ngForm"
+    (ngSubmit)="saveOrder()"
+  >
+    <div class="card-heading">
+      <div>
+        <h2>Customer &amp; laundry details</h2>
+        <p>Enter the information below to create a new order.</p>
+      </div>
+
+      <span class="next-id">Next ID: {{ nextOrderId }}</span>
+    </div>
+
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label for="customerName">Customer name</label>
+          <input
+            id="customerName"
+            name="customerName"
+            type="text"
+            [(ngModel)]="customerName"
+            placeholder="e.g. Juan Dela Cruz"
+            autocomplete="name"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="contactNumber">Contact number</label>
+          <input
+            id="contactNumber"
+            name="contactNumber"
+            type="tel"
+            [(ngModel)]="contactNumber"
+            placeholder="09XX XXX XXXX"
+            autocomplete="tel"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="weight">Laundry weight</label>
+          <div class="input-with-unit">
+            <input
+              id="weight"
+              name="weight"
+              type="number"
+              [(ngModel)]="weight"
+              min="0.1"
+              step="0.1"
+              required
+            />
+            <span>kg</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="pricePerKilo">Price per kilo</label>
+          <div class="input-with-unit price-input">
+            <span>₱</span>
+            <input
+              id="pricePerKilo"
+              name="pricePerKilo"
+              type="number"
+              [value]="pricePerKilo"
+              readonly
+              title="Set by the owner under Settings"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="total-panel">
+        <div>
+          <strong>Calculated total fee</strong>
+          <p>
+            {{ (weight || 0).toFixed(2) }} kg ×
+            ₱{{ pricePerKilo.toFixed(2) }} per kg
+          </p>
+        </div>
+
+        <strong class="total-amount">
+          {{ totalFee | currency:'PHP':'symbol':'1.0-2' }}
+        </strong>
+      </div>
+
+      <div
+        *ngIf="message()"
+        class="form-message"
+        [class.success]="messageType() === 'success'"
+        [class.error]="messageType() === 'error'"
+        role="status"
+      >
+        {{ message() }}
+      </div>
+
+      <div class="card-footer">
+        <p>Payment can be recorded when the order is claimed.</p>
+
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="orderForm.invalid || saving()"
+        >
+          {{ saving() ? 'Saving…' : 'Save order' }} <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,53 @@
+<div class="settings-page">
+  <header class="page-heading">
+    <h1>Settings</h1>
+    <p>Shop-wide pricing used by the automated price calculator.</p>
+  </header>
+
+  <section class="settings-card">
+    <h2>Price per kilo</h2>
+    <p>
+      One flat rate applies to every order. Orders already saved keep the rate
+      they were created with.
+    </p>
+
+    <form (ngSubmit)="save()" #rateForm="ngForm">
+      <label for="rate">Rate (₱ per kg)</label>
+      <div class="rate-row">
+        <span class="currency">₱</span>
+        <input
+          id="rate"
+          name="rate"
+          type="number"
+          min="1"
+          step="0.5"
+          [(ngModel)]="rate"
+          [disabled]="!auth.isOwner()"
+          required
+        />
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="!auth.isOwner() || saving() || rateForm.invalid"
+        >
+          {{ saving() ? 'Saving…' : 'Save rate' }}
+        </button>
+      </div>
+
+      <p class="note" *ngIf="!auth.isOwner()">
+        Only the owner account can change the rate. Current rate:
+        {{ data.pricePerKilo() | currency:'PHP':'symbol':'1.2-2' }} per kg.
+      </p>
+
+      <p
+        *ngIf="message()"
+        class="feedback"
+        [class.success]="messageType() === 'success'"
+        [class.error]="messageType() === 'error'"
+        role="status"
+      >
+        {{ message() }}
+      </p>
+    </form>
+  </section>
+</div>

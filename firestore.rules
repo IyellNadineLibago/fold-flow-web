@@ -1,0 +1,108 @@
+rules_version = '2';
+
+// FoldFlow security rules.
+//
+//  * Staff (web dashboard)  = signed in with email/password AND has a document
+//                             at staff/{uid}  (role: 'staff' | 'owner').
+//  * Customers (mobile app) = signed in anonymously. They can only
+//                             - create a reservation that belongs to them,
+//                             - read their own reservations,
+//                             - read ONE tracking document at a time by Order ID.
+//    They can never read the orders collection (names, phone numbers, payments).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function staffDoc() {
+      return get(/databases/$(database)/documents/staff/$(request.auth.uid));
+    }
+
+    function isStaff() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/staff/$(request.auth.uid));
+    }
+
+    function isOwner() {
+      return isStaff() && staffDoc().data.role == 'owner';
+    }
+
+    function validNewReservation(id) {
+      let d = request.resource.data;
+      return d.keys().hasOnly([
+          'reference', 'customerUid', 'customerName', 'contactNumber',
+          'dropOffDate', 'dropOffTime', 'status', 'orderId', 'source',
+          'createdAt'
+        ])
+        && d.reference == id
+        && d.status == 'pending'
+        && d.orderId == null
+        && d.customerName is string
+        && d.customerName.size() >= 2 && d.customerName.size() <= 80
+        && d.contactNumber is string
+        && d.contactNumber.size() >= 7 && d.contactNumber.size() <= 30
+        && d.dropOffDate is string && d.dropOffDate.size() == 10
+        && d.dropOffTime is string && d.dropOffTime.size() <= 12
+        && d.createdAt == request.time;
+    }
+
+    // ---- staff directory (managed by hand in the Firebase console) --------
+    match /staff/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+
+    // ---- shop settings: one flat price per kilo ---------------------------
+    match /settings/{docId} {
+      allow read: if isStaff();
+      allow write: if isOwner();
+    }
+
+    // ---- Order ID counter -------------------------------------------------
+    match /counters/{docId} {
+      allow read, write: if isStaff();
+    }
+
+    // ---- reservations -----------------------------------------------------
+    match /reservations/{reservationId} {
+      allow read: if isStaff()
+        || (signedIn() && resource.data.customerUid == request.auth.uid);
+
+      // App: anonymous customer creates a request that belongs to them.
+      // Web:  staff can also add a reservation on a customer's behalf.
+      allow create: if isStaff()
+        || (signedIn()
+            && request.resource.data.customerUid == request.auth.uid
+            && validNewReservation(reservationId));
+
+      allow update, delete: if isStaff();
+    }
+
+    // ---- orders: staff only ----------------------------------------------
+    match /orders/{orderId} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      // An order can only be marked claimed once it has been paid.
+      allow update: if isStaff()
+        && (request.resource.data.status != 'claimed'
+            || request.resource.data.paymentStatus == 'paid');
+      allow delete: if false;
+
+      match /history/{entryId} {
+        allow read, create: if isStaff();
+        allow update, delete: if false;
+      }
+    }
+
+    // ---- public tracking card (no phone number, no full name) ------------
+    // Customers can fetch one card if they know the Order ID, but cannot
+    // list or search the collection.
+    match /tracking/{orderId} {
+      allow get: if signedIn();
+      allow list: if isStaff();
+      allow write: if isStaff();
+    }
+  }
+}

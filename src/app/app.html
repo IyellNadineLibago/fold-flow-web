@@ -1,0 +1,73 @@
+
+@if (isLoginPage) {
+  <router-outlet />
+} @else {
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a class="brand" routerLink="/dashboard">
+        <span class="brand-mark">Ⅲ</span>
+        <span>
+          <strong>FoldFlow</strong>
+          <small>Laundry Management</small>
+        </span>
+      </a>
+
+      <p class="nav-heading">WORKSPACE</p>
+
+      <nav class="navigation">
+        @for (item of navigation; track item.path) {
+          <a
+            class="nav-link"
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <span class="nav-icon">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+            @if (item.path === '/reservations' && pendingReservations > 0) {
+              <span class="nav-badge">{{ pendingReservations }}</span>
+            }
+          </a>
+        }
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="shop-card">
+          <strong>FoldFlow Laundry</strong>
+          <small>Shop Management</small>
+        </div>
+
+        <div class="profile">
+          <span class="avatar">{{ badge }}</span>
+          <span>
+            <strong>{{ auth.email() }}</strong>
+            <small>{{ roleLabel }}</small>
+          </span>
+        </div>
+
+        <button type="button" class="sign-out" (click)="signOut()">
+          Sign out
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div>
+          <span class="topbar-label">FOLDFLOW MANAGEMENT</span>
+          <h2>Laundry Operations</h2>
+        </div>
+
+        <span class="account-badge">{{ badge }}</span>
+      </header>
+
+      @if (data.connectionError()) {
+        <p class="connection-error" role="alert">{{ data.connectionError() }}</p>
+      }
+
+      <section class="page-content">
+        <router-outlet />
+      </section>
+    </main>
+  </div>
+}

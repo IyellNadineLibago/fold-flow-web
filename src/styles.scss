@@ -1,0 +1,44 @@
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-width: 320px;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@media print {
+  .sidebar,
+  .topbar,
+  .no-print,
+  .page-heading {
+    display: none !important;
+  }
+
+  .app-layout,
+  .main-area,
+  .page-content {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ticket-card {
+    border: none !important;
+    margin: 0 auto;
+  }
+}
